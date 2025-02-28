@@ -1,0 +1,59 @@
+###################
+# Docker Compose File #
+###################
+
+services:
+
+###############################
+  module_1_service:
+    build:
+      context: ./module_1 
+      dockerfile: Dockerfile.module_1
+    container_name: module_1_container
+    command: ["/bin/bash", "start.sh"]
+    volumes:
+      - ./module_1/:/app
+      - ./otter_net_utils.py:/app/otter_net_utils.py
+    ports:
+      - "5001:5000"  # This maps port 5000 inside the container to port 5001 on the host. Requests sent to localhost:5001 on 
+                     # the host will be forwarded to port 5000 inside the container.
+    networks:
+      - test_network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"] 
+
+###############################
+
+
+###############################
+  module_2_service:
+    build:
+      context: ./module_2
+      dockerfile: Dockerfile.module_2
+    container_name: module_2_container
+    command: ["/bin/bash", "start.sh"]
+    volumes:
+      - ./module_2:/app
+      - ./otter_net_utils.py:/app/otter_net_utils.py
+    ports:
+      - "5002:5000"  
+    networks:
+      - test_network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"] 
+      
+    depends_on: # Start Client after servers
+      - module_1_service
+
+###############################
+networks:
+   test_network:
+     driver: bridge
+
+

@@ -1,0 +1,16 @@
+##### DOCKERFILE ######
+# Specific Image #
+###################
+
+# Use the official TensorFlow GPU image
+FROM frcarlito/docker_tf
+# Set the working directory
+WORKDIR /app
+
+RUN pip install numpy && pip install pillow 
+
+# Expose the port that will be used for networking
+EXPOSE 5000
+
+# Command executed when a container is deployed
+CMD ["/bin/bash", "start.sh"]

@@ -1,0 +1,12 @@
+##### DOCKERFILE ######
+# Specific Image #
+###################
+
+# Inherit from the base image
+FROM demo_base_image
+
+# Expose the port that will be used for networking
+EXPOSE 5000
+
+# Command executed when a container is deployed
+CMD ["/bin/bash", "start.sh"]
