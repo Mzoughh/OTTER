@@ -122,10 +122,6 @@ if __name__ == "__main__":
 
     ########### Interaction with C3 ###########
     buffer_size = 1024
-    s2 = tcp_tools.init_client_connection_UDP(HOST_3, PORT_3)
-
-    # Specific Case where client want to send to server a variable 
-    # Receive connection message from C3, allowing C2 to know C3's IP address
-    _ , server_addr = tcp_tools.wait_for_container_variable_UDP(s2,buffer_size)
+    s2, server_addr  = tcp_tools.init_client_connection_UDP(HOST_3, PORT_3, buffer_size)
 
     tcp_tools.send_variable_to_container_UDP(s2, prediction, server_addr) # Send Prediction 2 to C3

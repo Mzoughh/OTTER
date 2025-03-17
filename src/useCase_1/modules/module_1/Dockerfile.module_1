@@ -6,7 +6,8 @@
 FROM demo_base_image
 
 # For this specific UseCase : Update APT repositories and install ffmpeg
-RUN  apt-get install -y ffmpeg && apt-get clean 
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
+
 
 # Expose the port that will be used for networking
 EXPOSE 5000

@@ -86,11 +86,8 @@ if __name__ == "__main__":
     buffer_size =  1024
 
     ########### Interaction with C2 ###########
-    # Receive client request which ask for addr
-    s, client_addr  = tcp_tools.init_server_UDP_connection(HOST, PORT, buffer_size)
-
-    # Sent addr to C2
-    tcp_tools.send_variable_to_container_UDP(s,'CON2 addr ?', client_addr)
+    # init connection and  send server address at the same time
+    s, client_addr  = tcp_tools.init_server_UDP_connection(HOST, PORT,buffer_size )
 
     data_decode, _ = tcp_tools.wait_for_container_variable_UDP(s, buffer_size)
 

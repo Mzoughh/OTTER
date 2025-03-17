@@ -7,7 +7,6 @@ FROM frcarlito/docker_tf
 # Set the working directory
 WORKDIR /app
 
-
 RUN pip install numpy && pip install pillow && pip install transformers && pip install tf-keras
 
 # Expose the port that will be used for networking

@@ -32,10 +32,12 @@ class OtterUtils :
 # exchange strings only (max length = buffer size) only.
 # We use the UDP protocol for faster and smaller variable exchanges.
     
+   
     def init_server_UDP_connection(self, HOST, PORT, buffer_size):
         """
-        Initializes a UDP connection for the server, waits for the client address (for runtime optimization),
+        Initializes a UDP connection for the server, waits for the client address (for runtime optimization), sends server address
         and returns the socket and client address.
+
         Args:
             HOST (str): The IP address or hostname of the server.
             PORT (int): The port to use for the connection.
@@ -45,14 +47,15 @@ class OtterUtils :
             tuple: A tuple containing the UDP socket object and the client address.
         """
         try:
-           
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.bind((HOST, PORT))
             logging.info(f"Network started on {HOST}:{PORT} and waiting for client messages")
 
- 
             _, client_addr = self.wait_for_container_variable_UDP(s, buffer_size)
             logging.info(f"Connection with {client_addr} available")
+
+            s.sendto(b"Connection established", client_addr)
+            logging.info(f"Sent confirmation to {client_addr}")
 
             return s, client_addr
 
@@ -60,49 +63,58 @@ class OtterUtils :
             logging.error(f"Error initializing server: {e}")
             raise
 
-    def init_client_connection_UDP(self, HOST, PORT):
+
+    def init_client_connection_UDP(self, HOST, PORT, buffer_size):
         """
         Initializes a UDP connection for the client and sends a connection request to the server.
+        Receive a UDP packet from the server to obtain the server address. 
 
         Args:
             HOST (str): The IP address or hostname of the server.
             PORT (int): The port to use for the connection.
+            buffer_size (int): The size of the buffer to use for receiving data.
 
         Returns:
-            socket: The UDP socket object used for communication.
+            tuple: The UDP socket object and the server address.
         """
+        
         try:
-
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            
             s.sendto(b"Request for connection", (HOST, PORT))
             logging.info(f"Connection request sent to {HOST}:{PORT}")
-            return s
+            
+            _, server_addr = self.wait_for_container_variable_UDP(s, buffer_size)
+            logging.info(f"Connected to server at {server_addr}")
+            
+            return s, server_addr
         
         except socket.error as e:
             logging.error(f"Error initializing UDP connection: {e}")
             raise
 
     def wait_for_container_variable_UDP(self, s, buffer_size):
-        """
-        Waits for a container request (e.g., an AI prediction request) from the client.
+            """
+            Waits for a container request (e.g., an AI prediction request) from the client.
 
-        Args:
-            s (socket): The UDP socket object used for communication.
-            buffer_size (int): The size of the buffer to use for receiving data.
+            Args:
+                s (socket): The UDP socket object used for communication.
+                buffer_size (int): The size of the buffer to use for receiving data.
 
-        Returns:
-            tuple: A tuple containing the decoded message and the address of the sender.
-        """
-        try:
-            # Receive a container request (e.g., asking for an AI prediction)
-            data, addr = s.recvfrom(buffer_size)
-            data_decode = data.decode()
-            logging.info(f"Received message from {addr}: {data_decode}")
-            return data_decode, addr
-        
-        except socket.error as e:
-            logging.error(f"Error receiving data: {e}")
-            raise
+            Returns:
+                tuple: A tuple containing the decoded message and the address of the sender.
+            """
+            try:
+
+                data, addr = s.recvfrom(buffer_size)
+                data_decode = data.decode()
+                logging.info(f"Received message from {addr}: {data_decode}")
+                return data_decode, addr
+            
+            except socket.error as e:
+                logging.error(f"Error receiving data: {e}")
+                raise
+
 
     def send_variable_to_container_UDP(self, s, prediction, addr):
         """
@@ -114,7 +126,6 @@ class OtterUtils :
             addr (tuple): The address of the recipient.
         """
         try:
-
             if isinstance(prediction, str):
                 prediction_encode = prediction.encode()
             else:
@@ -126,7 +137,6 @@ class OtterUtils :
         except socket.error as e:
             logging.error(f"Error sending data: {e}")
             raise
-
 
 # ------------------------------ TCP -----------------------------------------#
 # In this section, we propose an implementation of functions to initiate and use a TCP connection to exchange strings or NumPy arrays.
